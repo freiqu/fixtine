@@ -1,20 +1,20 @@
 <script lang="ts">
 import { defineComponent } from 'vue';
 import type { FileUploadRemoveEvent, FileUploadSelectEvent } from 'primevue';
-
-type ConversionState = 'open' | 'converting' | 'done' | 'error';
-type ConvertFile = {
-  originalFile: File;
-  conversionState: ConversionState;
-  name: string;
-  url?: string;
-  newFile?: File;
-};
+import type { ConversionState } from './types/conversionState.ts';
+import { type ConversionFileType } from './types/conversionFiles.ts';
+import { completeConversion } from './lib/completeConversion.ts';
+import { decodeICS } from './lib/decodeICS.ts';
+import FileTable from './components/FileTable.vue';
+import ConverterSelector from './components/ConverterSelector.vue';
+import { useConverterStore } from './stores/useConverterStore.ts';
 
 export default defineComponent({
   name: 'App',
+  components: { ConverterSelector, FileTable },
   data: () => ({
-    files: [] as ConvertFile[],
+    files: [] as ConversionFileType[],
+    converterStore: useConverterStore(),
   }),
   computed: {
     showDownloadAll() {
@@ -26,18 +26,20 @@ export default defineComponent({
   },
   methods: {
     onConvert() {
-      const decoder = new TextDecoder('utf-16le');
-      const encoder = new TextEncoder();
-      this.files.forEach(async (curFile) => {
-        if (curFile.conversionState !== 'open') return;
+      this.files.forEach(async (curFile, index) => {
         curFile.conversionState = 'converting';
-        const originalFile = curFile.originalFile;
-        const text = decoder.decode(await originalFile.arrayBuffer());
-        const newFileName = `new-${originalFile.name}`;
-        const newFile = new File([encoder.encode(text)], newFileName);
-        curFile.url = URL.createObjectURL(newFile);
-        curFile.conversionState = 'done';
-        curFile.newFile = newFile;
+        let decodedFile = await decodeICS(curFile);
+        this.files[index] = decodedFile;
+        for (
+          let i = this.converterStore.fileConverter.length - 1;
+          i >= 0;
+          i--
+        ) {
+          const converter = this.converterStore.fileConverter[i]!;
+          decodedFile = converter.convert(decodedFile);
+          this.files[index] = decodedFile;
+        }
+        this.files[index] = completeConversion(decodedFile);
       });
     },
     updateCount({ files }: FileUploadRemoveEvent | FileUploadSelectEvent) {
@@ -46,10 +48,9 @@ export default defineComponent({
         ...fileArr
           .filter((file) => !this.files.some((f) => f.originalFile === file))
           .map(
-            (file): ConvertFile => ({
+            (file): ConversionFileType => ({
               originalFile: file,
               conversionState: 'open',
-              name: file.name.replace('.ics', ''),
             }),
           ),
       );
@@ -123,7 +124,7 @@ export default defineComponent({
             <Button
               v-if="showDownloadAll"
               icon="pi pi-download"
-              :label="$t('download_all')"
+              :label="$t('downloadAll')"
               @click="downloadAll()"
             />
           </div>
@@ -139,59 +140,10 @@ export default defineComponent({
         </div>
       </template>
       <template #content="{ removeFileCallback }">
-        <DataTable v-if="files.length > 0" :value="files">
-          <Column field="name" :header="$t('table.header.file')">
-            <template #body="{ data }: { data: ConvertFile }">
-              <div class="flex flex-row gap-1">
-                <i class="pi pi-file text-2xl" />
-                <span> {{ data.originalFile.name }} </span>
-              </div>
-            </template>
-          </Column>
-          <Column :header="$t('table.header.state')">
-            <template #body="{ data }: { data: ConvertFile }">
-              <Tag
-                :value="$t(`conversion_state.${data.conversionState}`)"
-                :severity="getStateSeverity(data.conversionState)"
-              />
-            </template>
-          </Column>
-          <Column :header="$t('table.header.actions')" class="w-1">
-            <template
-              #body="{ data, index }: { data: ConvertFile; index: number }"
-            >
-              <div class="flex flex-row gap-2 justify-content-end">
-                <Button
-                  v-if="data.conversionState !== 'done'"
-                  :icon="
-                    data.conversionState === 'converting'
-                      ? 'pi pi-spin pi-spinner'
-                      : 'pi pi-download'
-                  "
-                  rounded
-                  disabled
-                />
-                <Button
-                  v-else
-                  as="a"
-                  icon="pi pi-download"
-                  :href="data.url"
-                  :download="data.newFile?.name"
-                  rounded
-                >
-                </Button>
-                <Button
-                  icon="pi pi-times"
-                  rounded
-                  severity="danger"
-                  @click="removeFileCallback(index)"
-                />
-              </div>
-            </template>
-          </Column>
-        </DataTable>
+        <FileTable :conversionFiles="files" @removeFile="removeFileCallback" />
       </template>
     </FileUpload>
+    <ConverterSelector></ConverterSelector>
   </main>
 </template>
 

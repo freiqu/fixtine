@@ -6,6 +6,7 @@ import i18n from './lib/i18n.ts';
 import 'primeflex/primeflex.css';
 import './styles.css';
 import 'primeicons/primeicons.css';
+import pinia from './lib/pinia.ts';
 
 const app = createApp(App);
 app.use(PrimeVue, {
@@ -14,4 +15,5 @@ app.use(PrimeVue, {
   },
 });
 app.use(i18n);
+app.use(pinia);
 app.mount('#app');

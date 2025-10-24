@@ -1,6 +1,6 @@
 {
   "cancel": "Cancel",
-  "conversion_state": {
+  "conversionState": {
     "converting": "Converting",
     "done": "Done",
     "error": "Fehler",
@@ -8,10 +8,11 @@
   },
   "convert": "Convert",
   "coose": "Choose",
-  "download_all": "Download All",
+  "downloadAll": "Download All",
   "table": {
     "header": {
       "actions": "Actions",
+      "encoding": "Encoding",
       "file": "File",
       "state": "State"
     }

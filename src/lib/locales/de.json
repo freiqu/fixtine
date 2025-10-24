@@ -1,6 +1,6 @@
 {
   "cancel": "Abbrechen",
-  "conversion_state": {
+  "conversionState": {
     "converting": "läuft",
     "done": "Fertig",
     "error": "Error",
@@ -8,10 +8,11 @@
   },
   "convert": "Konvertieren",
   "coose": "Wählen",
-  "download_all": "Alle Herunterladen",
+  "downloadAll": "Alle Herunterladen",
   "table": {
     "header": {
       "actions": "Aktionen",
+      "encoding": "Kodierung",
       "file": "Datei",
       "state": "Status"
     }
