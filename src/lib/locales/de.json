@@ -1,0 +1,19 @@
+{
+  "cancel": "Abbrechen",
+  "conversion_state": {
+    "converting": "läuft",
+    "done": "Fertig",
+    "error": "Error",
+    "open": "Offen"
+  },
+  "convert": "Konvertieren",
+  "coose": "Wählen",
+  "download_all": "Alle Herunterladen",
+  "table": {
+    "header": {
+      "actions": "Aktionen",
+      "file": "Datei",
+      "state": "Status"
+    }
+  }
+}

@@ -12,5 +12,10 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     Button: typeof import('primevue/button')['default']
+    Column: typeof import('primevue/column')['default']
+    DataTable: typeof import('primevue/datatable')['default']
+    FileUpload: typeof import('primevue/fileupload')['default']
+    FileUploader: typeof import('./src/components/FileUploader.vue')['default']
+    Tag: typeof import('primevue/tag')['default']
   }
 }
